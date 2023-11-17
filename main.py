@@ -15,14 +15,13 @@ lfw_people = fetch_lfw_people(resize=None,min_faces_per_person=70, color=True,sl
 print(lfw_people.images[0].shape)
 print(lfw_people.target[0])
 # plots images
-'''
+
 fig, arr = plt.subplots(1, 2, figsize=(15, 15))
 arr[0].imshow(lfw_people.images[0])
 arr[0].set_title(lfw_people.target_names[0])
 arr[1].imshow(lfw_people.images[1])
 arr[1].set_title(lfw_people.target_names[1])
 plt.show()
-'''
 target_shape_hr_img = [128, 128, 3]
 target_shape_lr_img = [25, 25, 3]
 
@@ -31,26 +30,19 @@ i_h_lr, i_w_lr, i_c_lr = target_shape_lr_img
 
 m = len(lfw_people.images)  # number of images
 X = np.zeros((m, i_h, i_w, i_c), dtype=np.float32)
-y = np.zeros((m, i_h, i_w, i_c), dtype=np.float32)
+y = np.zeros((m, i_h_lr, i_w_lr, i_c_lr), dtype=np.float32)
 
-for img in lfw_people.images:
-    single_img = lfw_people.images[img]
-    single_img = np.asarray(single_img)
-    single_img = single_img.resize((i_h, i_w))
-    single_img = np.reshape(single_img, (i_h, i_w, i_c))
-    single_img = single_img / 255.0
-    X[img] = single_img
-for img in lfw_people.images:
-    single_img = lfw_people.images[img]
-    single_img = np.asarray(single_img)
-    single_img = single_img.resize((i_h_lr, i_w_lr))
-    single_img = np.reshape(single_img, (i_h_lr, i_w_lr, i_c_lr))
-    single_img = single_img / 255.0
-    y[img] = single_img
+for i in range(len(lfw_people.images)):
+    single_img = np.resize(lfw_people.images[i], (i_h, i_w, i_c))
+    X[i] = single_img
+for j in range(len(lfw_people.images)):
+    single_img = np.resize(lfw_people.images[j], (i_h_lr, i_w_lr, i_c_lr))
+    y[j] = single_img
 
 lr_ip = Input(shape=(25,25,3))
 hr_ip = Input(shape=(128,128,3))
 train_lr, test_lr, train_hr, test_hr = train_test_split(X, y, test_size=0.1, random_state=123)#training images arrays normalized between 0 & 1
+
 '''
 generator = create_gen(lr_ip)
 discriminator = create_disc(hr_ip)
