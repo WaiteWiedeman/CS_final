@@ -33,10 +33,10 @@ X = np.zeros((m, i_h, i_w, i_c), dtype=np.float32)
 y = np.zeros((m, i_h_lr, i_w_lr, i_c_lr), dtype=np.float32)
 
 for i in range(len(lfw_people.images)):
-    single_img = np.resize(lfw_people.images[i], (i_h, i_w, i_c))
+    single_img = np.resize(lfw_people.images[i], (i_h_lr, i_w_lr, i_c_lr))
     X[i] = single_img
 for j in range(len(lfw_people.images)):
-    single_img = np.resize(lfw_people.images[j], (i_h_lr, i_w_lr, i_c_lr))
+    single_img = np.resize(lfw_people.images[j], (i_h, i_w, i_c))
     y[j] = single_img
 
 lr_ip = Input(shape=(25,25,3))
