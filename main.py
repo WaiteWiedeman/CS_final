@@ -6,22 +6,26 @@ import math
 import numpy as np
 from model import create_gen, create_comb, create_disc, build_vgg
 from keras.layers import Input
+from PIL import Image
 
+
+def show_img(img, img2, t1, t2):
+    fig, arr = plt.subplots(1, 2, figsize=(15, 15))
+    arr[0].imshow(img)
+    arr[0].set_title(t1)
+    arr[1].imshow(img2)
+    arr[1].set_title(t2)
+    plt.show()
 
 
 lfw_people = fetch_lfw_people(resize=None,min_faces_per_person=70, color=True,slice_=None)
-#print(lfw_people.DESCR)
+# print(lfw_people.DESCR)
 
 print(lfw_people.images[0].shape)
 print(lfw_people.target[0])
 # plots images
 
-fig, arr = plt.subplots(1, 2, figsize=(15, 15))
-arr[0].imshow(lfw_people.images[0])
-arr[0].set_title(lfw_people.target_names[0])
-arr[1].imshow(lfw_people.images[1])
-arr[1].set_title(lfw_people.target_names[1])
-plt.show()
+#show_img(lfw_people.images[0], lfw_people.images[1], lfw_people.target_names[0], lfw_people.target_names[1])
 target_shape_hr_img = [128, 128, 3]
 target_shape_lr_img = [25, 25, 3]
 
@@ -29,21 +33,27 @@ i_h, i_w, i_c = target_shape_hr_img
 i_h_lr, i_w_lr, i_c_lr = target_shape_lr_img
 
 m = len(lfw_people.images)  # number of images
-X = np.zeros((m, i_h, i_w, i_c), dtype=np.float32)
-y = np.zeros((m, i_h_lr, i_w_lr, i_c_lr), dtype=np.float32)
-
+y = np.zeros((m, i_h, i_w, i_c), dtype=np.float32)
+X = np.zeros((m, i_h_lr, i_w_lr, i_c_lr), dtype=np.float32)
 for i in range(len(lfw_people.images)):
-    single_img = np.resize(lfw_people.images[i], (i_h_lr, i_w_lr, i_c_lr))
-    X[i] = single_img
+    single_img = Image.fromarray((lfw_people.images[i] * 255).astype(np.uint8)).convert('RGB')
+    single_img = single_img.resize((i_h_lr, i_w_lr))
+    single_img = np.reshape(single_img, (i_h_lr, i_w_lr, i_c_lr))
+    single_img = single_img.astype(float)
+    X[i] = single_img / 255.0
 for j in range(len(lfw_people.images)):
-    single_img = np.resize(lfw_people.images[j], (i_h, i_w, i_c))
-    y[j] = single_img
+    single_img = Image.fromarray((lfw_people.images[j] * 255).astype(np.uint8)).convert('RGB')
+    single_img = single_img.resize((i_h, i_w))
+    single_img = np.reshape(single_img, (i_h, i_w, i_c))
+    single_img = single_img.astype(float)
+    y[j] = single_img / 255.0
+
+#show_img(X[0], y[0], lfw_people.target_names[0], lfw_people.target_names[0])
 
 lr_ip = Input(shape=(25,25,3))
 hr_ip = Input(shape=(128,128,3))
-train_lr, test_lr, train_hr, test_hr = train_test_split(X, y, test_size=0.1, random_state=123)#training images arrays normalized between 0 & 1
+train_lr, test_lr, train_hr, test_hr = train_test_split(X, y, test_size=0.2, random_state=123)#training images arrays normalized between 0 & 1
 
-'''
 generator = create_gen(lr_ip)
 discriminator = create_disc(hr_ip)
 discriminator.compile(loss="binary_crossentropy", optimizer="adam",
@@ -104,4 +114,3 @@ for e in range(epochs):
     eval, _, _ = gan_model.evaluate([test_lr, test_hr], [label, test_features])
 
     test_prediction = generator.predict_on_batch(test_lr)
-'''

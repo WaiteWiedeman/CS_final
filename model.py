@@ -77,9 +77,9 @@ def create_disc(disc_ip):
 # Build the VGG19 model upto 10th layer
 # Used to extract the features of high res imgaes
 def build_vgg():
-    vgg = VGG19(weights="imagenet")
+    vgg = VGG19(include_top=False, weights="imagenet",input_shape=(128,128,3))
     vgg.outputs = [vgg.layers[9].output]
-    img = Input(shape=hr_shape)
+    img = Input(shape=(128,128,3))
     img_features = vgg(img)
     return Model(img, img_features)
 
